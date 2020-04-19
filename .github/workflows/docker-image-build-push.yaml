@@ -1,9 +1,5 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Build Docker image
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   push:
     branches: [ master ]
@@ -16,7 +12,7 @@ jobs:
     name: Build ZFS user land tools
     steps:
       - uses: actions/checkout@v2
-      - name: Login to docker hub
+      - name: Login to quay.io
         uses: actions-hub/docker/login@master
         env:
           DOCKER_USERNAME: ${{ secrets.QUAY_USER_NAME }}
@@ -26,7 +22,7 @@ jobs:
       - name: Build :latest
         run: docker build -t quay.io/steigr/zfs-static:latest .
 
-      - name: Push to docker hub :latest
+      - name: Push to quay.io :latest
         uses: actions-hub/docker@master
         with:
           args: push quay.io/steigr/zfs-static:latest
