@@ -3,7 +3,7 @@ set -eo pipefail
 
 export ZFS_VERSION=${ZFS_VERSION:-master}
 
-dnf install -y git-core glibc-devel glibc-static zlib-devel zlib-static gettext-devel libtool libuuid-devel libblkid-devel libtirpc-devel openssl-devel openssl-static upx
+dnf install -y git-core glibc-devel glibc-static zlib-devel zlib-static gettext-devel libtool libuuid-devel libblkid-devel libtirpc-devel openssl-devel openssl-static libaio-devel
 
 cd $(mktemp -d --suffix=.zfs)
 trap "rm -rf $PWD" EXIT
@@ -17,10 +17,8 @@ cd zfs
 # Apply patch for specific versions
 [[ ! ${ZFS_VERSION} = "0.8.3" ]] ||curl -sL https://github.com/openzfs/zfs/commit/af09c050e95bebbaeca52156218f3f91e8c9951a.patch | patch -p1
 
-
 ./autogen.sh
-# LDFLAGS="$(find /usr/lib64 -name '*.a' | grep -v -e nonshared -e pthread) -static"
-./configure --with-config=user --enable-static --disable-shared
+./configure --with-config=user --enable-static --disable-shared --prefix=/usr --sysconfdir=/etc --localstatedir=/var
 ./scripts/make_gitrev.sh
 make -C lib -j8
 find . -name '*.a' | while read staticLib; do
@@ -56,7 +54,8 @@ for dir in *; do
       if file ${cmd} | grep -q 'ELF'; then
         strip -s ${cmd} || true
         [[ ! -f /bin/${cmd} ]] || rm -f /bin/${cmd}
-        upx -9 -o/bin/${cmd} ${cmd}
+        # only compress when UPX is installed, space-savings: ~6% ( 22.6 MB --> 24.1 MB )
+        command -v upx && upx -9 -o/bin/${cmd} ${cmd} || install -m 0755 ${cmd} /bin/${cmd}
       fi
     fi
   done

@@ -1,9 +1,9 @@
-DOCKER_IMAGE_NAME ?= zfs-user-static
+DOCKER_IMAGE_NAME ?= zfs-static
 
 REPO_PREFIX ?= quay.io/steigr
 
 ZFS_REPO    ?= zfsonlinux/zfs
-ZFS_VERSION ?= 0.8.3
+ZFS_VERSION ?= 2.0.0-rc1
 
 ifeq ($(ZFS_VERSION),master)
 DOCKER_IMAGE_VERSION := latest
